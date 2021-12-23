@@ -31,6 +31,23 @@ export const yearList = state => {
     return list
 }
 
+export const quoteList = (state, getters) => {
+    let list = []
+
+    if(!_.isEmpty(getters.dataSortedAndFiltered)) {
+        _.each(getters.dataSortedAndFiltered, (item) => {
+            if (!_.isEmpty(item.Quote)) {
+                _.each(item.Quote, (quote) => {
+                    let quoteTemp=_.assign({Id:item.Id}, quote)
+                    list.push(quoteTemp)
+                })
+            }
+        })
+        list = _.sortBy(list)
+    }
+    return list
+}
+
 export const dataSortedAndFiltered = state => {
     let list = []
 

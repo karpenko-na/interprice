@@ -54,15 +54,20 @@
                             <th rowspan="2" class="border-top-0">
 
                             </th>
-                            <th rowspan="2" class="border-top-0 cursor-pointer font-weight-normal" @click="toggleDataSort('date')">
+                            <th rowspan="2" class="border-top-0 cursor-pointer font-weight-normal"
+                                @click="toggleDataSort('date')">
                                 <span class="text-muted">DATE SENT</span>
-                                <span class="ml-2"><font-awesome-icon :icon="dataFilter.date ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
+                                <span class="ml-2"><font-awesome-icon
+                                    :icon="dataFilter.date ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
                             </th>
-                            <th rowspan="2" class="border-top-0 cursor-pointer font-weight-normal" @click="toggleDataSort('company')">
+                            <th rowspan="2" class="border-top-0 cursor-pointer font-weight-normal"
+                                @click="toggleDataSort('company')">
                                 <span class="text-muted">COMPANY</span>
-                                <span class="ml-2"><font-awesome-icon class="text-muted" :icon="dataFilter.company ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
+                                <span class="ml-2"><font-awesome-icon class="text-muted"
+                                                                      :icon="dataFilter.company ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
                             </th>
-                            <th v-for="yearItem in yearListSelected" :key="yearItem" colspan="2" class="border-top-0 text-center">
+                            <th v-for="yearItem in yearListSelected" :key="yearItem" colspan="2"
+                                class="border-top-0 text-center">
                                 {{ yearItem }} YRS
                             </th>
                         </tr>
@@ -89,10 +94,13 @@
                                     {{ dataItem.Company }}
                                 </td>
                                 <template v-for="yearItem in yearListSelected">
-                                    <td :key="yearItem+'FIX'" class="text-center text-nowrap font-weight-normal">
+                                    <td :key="yearItem+'FIX'"
+                                        class="text-center text-nowrap font-weight-normal"
+                                        :class="{'bg-warning':isMinValue(dataItem.Id, dataItem.Quote, yearItem, spreadSelected, 'FIX')}">
                                         {{ getValue(dataItem.Quote, yearItem, spreadSelected, 'FIX') }}
                                     </td>
-                                    <td :key="yearItem+'FRN'" class="text-center text-nowrap font-weight-normal">
+                                    <td :key="yearItem+'FRN'"
+                                        class="text-center text-nowrap font-weight-normal">
                                         {{ getValue(dataItem.Quote, yearItem, spreadSelected, 'FRN') }}
                                     </td>
                                 </template>
@@ -119,11 +127,13 @@
                             <th colspan="2" class="border-top-0"></th>
                             <th class="border-top-0">Average by {{ spreadSelected }}</th>
                             <template v-for="yearItem in yearListSelected">
-                                <th :key="yearItem+'FIX'" class="border-top-0 text-center text-nowrap font-weight-normal">
-
+                                <th :key="yearItem+'FIX'"
+                                    class="border-top-0 text-center text-nowrap font-weight-normal">
+                                    {{avrValue(yearItem, spreadSelected, 'FIX')}}
                                 </th>
-                                <th :key="yearItem+'FRN'" class="border-top-0 text-center text-nowrap font-weight-normal">
-
+                                <th :key="yearItem+'FRN'"
+                                    class="border-top-0 text-center text-nowrap font-weight-normal">
+                                    {{avrValue(yearItem, spreadSelected, 'FRN')}}
                                 </th>
                             </template>
                         </tr>
@@ -159,6 +169,7 @@ export default {
         ...mapGetters([
             'currencyList',
             'yearList',
+            'quoteList',
             'dataSortedAndFiltered',
         ]),
         fieldCompanyFilter: {
@@ -236,6 +247,50 @@ export default {
                 }
             }
             return valText
+        },
+        isMinValue(id, quotes, year, spread, couponType) {
+            let _self = this
+            let valMin = true
+            let val = _.find(quotes, (quote) => {
+                return quote.Years === year && quote.CouponType === couponType
+            })
+            if (!_.isUndefined(val) && !_.isNull(val[spread])) {
+                let quoteMin = _.find(this.quoteList, (quote) => {
+                    if (quote.Years === year && quote.CouponType === couponType && quote.Currency === _self.currencySelected && quote.Id !== id && !_.isNull(quote[spread])) {
+                        return quote[spread] < val[spread]
+                    } else {
+                        return false
+                    }
+                })
+                if (!_.isUndefined(quoteMin)) {
+                    valMin = false
+                }
+            } else {
+                valMin = false
+            }
+            return valMin
+        },
+        avrValue(year, spread, couponType) {
+            let _self = this
+            let vals = 0
+            let quotes = _.filter(this.quoteList, (quote) => {
+                return quote.Years === year && quote.CouponType === couponType && quote.Currency === _self.currencySelected && !_.isNull(quote[spread])
+            })
+            _.each(quotes, (quote) => {
+                vals += quote[spread]
+            })
+            let avr = 0
+            let avrText = ''
+            if(quotes.length>0 && vals>0) {
+                if (spread === 'Spread' || spread === '3MLSpread') {
+                    avr = _.round(vals/quotes.length,0)
+                    avrText = '+' + avr + 'bp'
+                } else if (spread === 'Yield') {
+                    avr = _.round(vals/quotes.length,3)
+                    avrText =avr + '%'
+                }
+            }
+            return avrText
         },
         isNullOrEmpty(val) {
             return _.isNull(val) || _.isEmpty(val)
