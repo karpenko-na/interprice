@@ -34,17 +34,8 @@ export const dataSortedAndFiltered = state => {
         list = _.orderBy(list,
             [
                 function (item) {
-                    // по пустым Quote
-                    return _.isEmpty(item.Quote)
-                },
-                function (item) {
-                    // по дате внутри пустых Quote
-                    if(_.isEmpty(item.Quote)) {
-                        if(_.isNull(item.DateSent)) return 1
-                        else return 0
-                    } else {
-                        return 1
-                    }
+                    // по пустым DateSent
+                    return _.isNull(item.DateSent)
                 },
                 function (item) {
                     // по дате
@@ -52,13 +43,17 @@ export const dataSortedAndFiltered = state => {
                     else return moment(item.DateSent, 'YYYY-MM-DD').unix()
                 },
                 function (item) {
+                    // по пустым Quote
+                    return _.isEmpty(item.Quote)
+                },
+                function (item) {
                     // по названию компании
                     return item.Company
                 },
             ], [
                 'asc',
-                'asc',
                 state.dataSort.date ? 'asc' : 'desc',
+                'asc',
                 state.dataSort.company ? 'asc' : 'desc'
             ]
         )
