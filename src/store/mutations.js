@@ -35,6 +35,14 @@ export default {
                     })
                 }
             })
+            let sort = {
+                'USD': 1,
+                'EUR': 2,
+                'CAD': 3,
+            }
+            list = _.sortBy(list, function (item) {
+                return sort[item]
+            })
         }
         state.currencyList=list
     },
