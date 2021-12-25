@@ -16,12 +16,10 @@
                             </template>
                         </b-button-group>
                         <b-button-group class="mr-4 mb-3">
-                            <template v-for="yearItem in yearList">
-                                <b-button v-if="inYearSelected(yearItem)" variant="primary" :key="yearItem"
-                                          class="text-nowrap" @click="onYearSelect(yearItem)">
-                                    {{ yearItem }} YRS
-                                </b-button>
-                                <b-button v-else variant="outline-primary" :key="yearItem"
+                            <template v-for="yearItem in currencyYearList">
+                                <b-button :variant="isYearSelected(yearItem) ? 'primary' : 'outline-primary'"
+                                          :key="yearItem"
+                                          class="text-nowrap"
                                           @click="onYearSelect(yearItem)">
                                     {{ yearItem }} YRS
                                 </b-button>
@@ -33,7 +31,7 @@
                                     {{ spreadItem }}
                                 </b-button>
                                 <b-button v-else variant="outline-primary" :key="spreadItem"
-                                          @click="onSpreanSelect(spreadItem)">
+                                          @click="onSpreadSelect(spreadItem)">
                                     {{ spreadItem }}
                                 </b-button>
                             </template>
@@ -154,11 +152,17 @@ export default {
     data() {
         return {}
     },
-    mounted() {
-        this.$store.commit('setYearSelected', this.yearList)
+    created() {
+        this.$store.commit('setCurrencyList')
+        _.each(this.currencyList, (currency) => {
+            this.$store.commit('setYearList', currency)
+            this.$store.commit('setYearSelected', {item: this.yearList[currency], currency:currency})
+        })
     },
     computed: {
         ...mapState([
+            'currencyList',
+            'yearList',
             'spreadList',
             'currencySelected',
             'yearSelected',
@@ -167,10 +171,10 @@ export default {
             'dataSort',
         ]),
         ...mapGetters([
-            'currencyList',
-            'yearList',
-            'quoteList',
+            'currencyYearList',
+            'currencyYearSelected',
             'dataSortedAndFiltered',
+            'quoteList',
         ]),
         fieldCompanyFilter: {
             get() {
@@ -182,8 +186,8 @@ export default {
         },
         yearListSelected: function () {
             let _self = this
-            return _.filter(this.yearList, function (yearItem) {
-                return _.includes(_self.yearSelected, yearItem)
+            return _.filter(this.currencyYearList, function (yearItem) {
+                return _.includes(_self.currencyYearSelected, yearItem)
             })
         },
         spreadListNotSelected: function () {
@@ -194,9 +198,6 @@ export default {
         },
     },
     methods: {
-        inYearSelected(item) {
-            return _.includes(this.yearSelected, item)
-        },
         isDataOpened(id) {
             return _.includes(this.dataOpened, id)
         },
@@ -217,8 +218,12 @@ export default {
         onCurrencySelect(item) {
             this.$store.commit('setCurrency', item)
         },
+        isYearSelected(item) {
+            //console.log(this.currencyYearSelected, item, _.includes(this.currencyYearSelected, item))
+            return _.includes(this.currencyYearSelected, item)
+        },
         onYearSelect(item) {
-            let yearSelected = _.assign([], this.yearSelected)
+            let yearSelected = _.assign([], this.currencyYearSelected)
             if (_.includes(yearSelected, item)) {
                 yearSelected = _.filter(yearSelected, function (yearItem) {
                     return yearItem !== item
@@ -226,9 +231,9 @@ export default {
             } else {
                 yearSelected.push(item)
             }
-            this.$store.commit('setYearSelected', yearSelected)
+            this.$store.commit('setYearSelected', {item: yearSelected, currency: this.currencySelected})
         },
-        onSpreanSelect(item) {
+        onSpreadSelect(item) {
             this.$store.commit('setSpreadSelected', item)
         },
         getDate(val) {
@@ -257,7 +262,7 @@ export default {
             if (!_.isUndefined(val) && !_.isNull(val[spread])) {
                 let quoteMin = _.find(this.quoteList, (quote) => {
                     if (quote.Years === year && quote.CouponType === couponType && quote.Currency === _self.currencySelected && quote.Id !== id && !_.isNull(quote[spread])) {
-                        return quote[spread] < val[spread]
+                        return parseFloat(quote[spread]) < parseFloat(val[spread])
                     } else {
                         return false
                     }
@@ -272,21 +277,21 @@ export default {
         },
         avrValue(year, spread, couponType) {
             let _self = this
-            let vals = 0
+            let values = 0
             let quotes = _.filter(this.quoteList, (quote) => {
                 return quote.Years === year && quote.CouponType === couponType && quote.Currency === _self.currencySelected && !_.isNull(quote[spread])
             })
             _.each(quotes, (quote) => {
-                vals += quote[spread]
+                values += parseFloat(quote[spread])
             })
             let avr = 0
             let avrText = ''
-            if(quotes.length>0 && vals>0) {
+            if(quotes.length>0) {
                 if (spread === 'Spread' || spread === '3MLSpread') {
-                    avr = _.round(vals/quotes.length,0)
+                    avr = _.round(values/quotes.length,0)
                     avrText = '+' + avr + 'bp'
                 } else if (spread === 'Yield') {
-                    avr = _.round(vals/quotes.length,3)
+                    avr = _.round(values/quotes.length,3)
                     avrText =avr + '%'
                 }
             }

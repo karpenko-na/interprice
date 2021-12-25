@@ -12,15 +12,23 @@ const store = new Vuex.Store({
         ajaxLoading: false,
         toastMessages: [], // 'success' | 'info' | 'error' | 'warning' | 'default'
 
+        currencyList: [],
+        yearList: {},
+        spreadList: [
+            'Spread',
+            'Yield',
+            '3MLSpread',
+        ],
+
         currencySelected: 'USD',
-        companyFilter: '',
-        yearSelected: [],
+        yearSelected: {},
         spreadSelected: 'Spread',
-        dataOpened: [],
+        companyFilter: '',
         dataSort: {
             date: false,
             company: true,
         },
+        dataOpened: [],
 
         data: {
             "Items": [
@@ -193,13 +201,6 @@ const store = new Vuex.Store({
                 }
             ]
         },
-
-        spreadList: [
-            'Spread',
-            'Yield',
-            '3MLSpread',
-        ],
-
     },
     getters,
     mutations,
