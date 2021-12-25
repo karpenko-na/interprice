@@ -44,7 +44,7 @@ export default {
     },
 
     setDataSort(state, field) {
-        state.dataFilter[field] = !state.dataFilter[field]
+        state.dataSort[field] = !state.dataSort[field]
     },
 
 };

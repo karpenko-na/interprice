@@ -58,13 +58,13 @@
                                 @click="toggleDataSort('date')">
                                 <span class="text-muted">DATE SENT</span>
                                 <span class="ml-2"><font-awesome-icon
-                                    :icon="dataFilter.date ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
+                                    :icon="dataSort.date ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
                             </th>
                             <th rowspan="2" class="border-top-0 cursor-pointer font-weight-normal"
                                 @click="toggleDataSort('company')">
                                 <span class="text-muted">COMPANY</span>
                                 <span class="ml-2"><font-awesome-icon class="text-muted"
-                                                                      :icon="dataFilter.company ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
+                                                                      :icon="dataSort.company ? 'sort-up' : 'sort-down'"></font-awesome-icon></span>
                             </th>
                             <th v-for="yearItem in yearListSelected" :key="yearItem" colspan="2"
                                 class="border-top-0 text-center">
@@ -164,7 +164,7 @@ export default {
             'yearSelected',
             'spreadSelected',
             'dataOpened',
-            'dataFilter',
+            'dataSort',
         ]),
         ...mapGetters([
             'currencyList',

@@ -17,7 +17,7 @@ const store = new Vuex.Store({
         yearSelected: [],
         spreadSelected: 'Spread',
         dataOpened: [],
-        dataFilter: {
+        dataSort: {
             date: false,
             company: true,
         },
